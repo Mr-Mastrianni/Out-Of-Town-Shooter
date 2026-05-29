@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Out of Town Shooter — The Book</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #08080c;
+    --surface: #111118;
+    --ink: #e8e4dc;
+    --muted: #8a8580;
+    --accent: #d4312e;
+    --accent-glow: #ff4842;
+    --gold: #c49a6c;
+    --border: #1e1e2a;
+    --radius: 6px;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* Noise overlay */
+  .noise {
+    position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Canvas particles */
+  #particles {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  }
+
+  /* Sections */
+  section {
+    position: relative; z-index: 1;
+    padding: 100px 24px;
+  }
+
+  .container {
+    max-width: 1100px; margin: 0 auto;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+    padding-top: 60px;
+  }
+  .hero-content { position: relative; z-index: 2; }
+  .hero-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.75rem; letter-spacing: 0.2em;
+    color: var(--accent); text-transform: uppercase;
+    border: 1px solid var(--accent);
+    padding: 8px 20px; border-radius: 2px;
+    margin-bottom: 32px;
+    animation: fadeInUp 0.8s ease-out;
+  }
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(4rem, 12vw, 9rem);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    animation: fadeInUp 0.8s ease-out 0.15s both;
+  }
+  .hero-title .out {
+    display: block; color: var(--accent);
+    text-shadow: 0 0 60px rgba(212,49,46,0.4);
+  }
+  .hero-title .shooter {
+    display: block;
+    font-size: clamp(5rem, 15vw, 11rem);
+    background: linear-gradient(180deg, #fff 0%, #8a8580 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-subtitle {
+    font-family: var(--font-mono);
+    font-size: 1rem; color: var(--muted);
+    max-width: 500px; margin: 24px auto 40px;
+    animation: fadeInUp 0.8s ease-out 0.3s both;
+  }
+  .hero-cta {
+    display: inline-flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+    animation: fadeInUp 0.8s ease-out 0.45s both;
+  }
+  .btn {
+    display: inline-block; padding: 14px 36px;
+    font-family: var(--font-display); font-size: 1.3rem; letter-spacing: 0.05em;
+    text-decoration: none; text-transform: uppercase; cursor: pointer;
+    transition: all 0.3s ease; position: relative;
+    border-radius: var(--radius);
+  }
+  .btn-primary {
+    background: var(--accent); color: #fff; border: none;
+    box-shadow: 0 0 30px rgba(212,49,46,0.3);
+  }
+  .btn-primary:hover {
+    background: var(--accent-glow);
+    box-shadow: 0 0 50px rgba(255,72,66,0.5);
+    transform: translateY(-2px);
+  }
+  .btn-ghost {
+    background: transparent; color: var(--ink);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover {
+    border-color: var(--ink); background: rgba(255,255,255,0.03);
+  }
+
+  /* Scroll indicator */
+  .scroll-indicator {
+    position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    animation: fadeInUp 1s ease-out 1s both;
+  }
+  .scroll-indicator span {
+    font-family: var(--font-mono); font-size: 0.65rem;
+    letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase;
+  }
+  .scroll-line {
+    width: 1px; height: 40px; background: linear-gradient(to bottom, var(--muted), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+
+  /* ── SYNOPSIS ── */
+  .synopsis {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .synopsis .container {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; align-items: center;
+  }
+  .section-tag {
+    font-family: var(--font-mono); font-size: 0.7rem;
+    letter-spacing: 0.25em; color: var(--accent);
+    text-transform: uppercase; margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    line-height: 1; margin-bottom: 24px;
+    color: var(--ink);
+  }
+  .synopsis-text {
+    color: var(--muted); font-size: 1.05rem; line-height: 1.8;
+  }
+  .synopsis-text p + p { margin-top: 1.2em; }
+  .synopsis-visual {
+    display: flex; justify-content: center; align-items: center;
+  }
+  .book-cover {
+    width: 280px; height: auto;
+    border-radius: 4px 12px 12px 4px;
+    box-shadow: 20px 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+  }
+  .book-cover:hover {
+    transform: translateY(-4px);
+    box-shadow: 24px 24px 70px rgba(0,0,0,0.6), 0 0 40px rgba(212,49,46,0.15);
+  }
+
+  /* ── AUTHOR ── */
+  .author .container {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; align-items: center;
+  }
+  .author-photo {
+    width: 100%; height: auto; aspect-ratio: 3/4;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 0 40px rgba(0,0,0,0.4);
+  }
+  .author-bio { color: var(--muted); font-size: 1.05rem; line-height: 1.8; }
+  .author-bio p + p { margin-top: 1.2em; }
+  .author-socials {
+    display: flex; gap: 16px; margin-top: 32px;
+  }
+  .author-socials a {
+    color: var(--muted); text-decoration: none;
+    font-family: var(--font-mono); font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    padding: 8px 16px; border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: all 0.3s ease;
+  }
+  .author-socials a:hover {
+    border-color: var(--accent); color: var(--accent);
+  }
+
+  /* ── QUOTE ── */
+  .quote-strip {
+    text-align: center; padding: 80px 24px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .quote-strip blockquote {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.2; max-width: 800px; margin: 0 auto;
+    color: var(--ink);
+  }
+  .quote-strip cite {
+    display: block; margin-top: 16px;
+    font-family: var(--font-mono); font-size: 0.75rem;
+    color: var(--accent); font-style: normal;
+    letter-spacing: 0.1em;
+  }
+
+  /* ── CTA ── */
+  .cta {
+    text-align: center;
+    min-height: 60vh; display: flex; align-items: center; justify-content: center;
+  }
+  .cta-newsletter {
+    margin-top: 32px; display: flex; gap: 8px;
+    max-width: 460px; margin-left: auto; margin-right: auto;
+  }
+  .cta-newsletter input {
+    flex: 1; padding: 14px 20px;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--ink); font-family: var(--font-body); font-size: 0.95rem;
+    border-radius: var(--radius); outline: none;
+    transition: border-color 0.3s;
+  }
+  .cta-newsletter input:focus { border-color: var(--accent); }
+  .cta-newsletter button {
+    padding: 14px 28px;
+    background: var(--accent); color: #fff; border: none;
+    font-family: var(--font-display); font-size: 1.1rem;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    border-radius: var(--radius); cursor: pointer;
+    transition: all 0.3s;
+  }
+  .cta-newsletter button:hover {
+    background: var(--accent-glow);
+    box-shadow: 0 0 30px rgba(212,49,46,0.4);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center; padding: 40px 24px;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono); font-size: 0.7rem;
+    color: var(--muted); letter-spacing: 0.05em;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+
+  /* Reveal on scroll */
+  .reveal {
+    opacity: 0; transform: translateY(40px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* Glitch effect on hover for title */
+  .glitch-hover {
+    position: relative;
+  }
+  .glitch-hover:hover {
+    animation: glitch 0.3s ease;
+  }
+  @keyframes glitch {
+    0%, 100% { transform: translate(0); }
+    20% { transform: translate(-3px, 2px); }
+    40% { transform: translate(3px, -1px); }
+    60% { transform: translate(-2px, -2px); }
+    80% { transform: translate(2px, 1px); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    section { padding: 60px 20px; }
+    .synopsis .container,
+    .author .container {
+      grid-template-columns: 1fr; gap: 40px;
+    }
+    .author .container { display: flex; flex-direction: column-reverse; }
+    .book-cover { width: 200px; }
+    .hero-title { font-size: clamp(3rem, 10vw, 5rem); }
+    .cta-newsletter { flex-direction: column; }
+    .hero-cta { flex-direction: column; align-items: center; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    #particles { display: none; }
+    .hero-title, .hero-badge, .hero-subtitle, .hero-cta, .scroll-indicator {
+      animation: none; opacity: 1;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="noise"></div>
+<canvas id="particles"></canvas>
+
+<!-- ── HERO ── -->
+<section class="hero" id="home">
+  <div class="hero-content">
+    <div class="hero-badge glitch-hover">Coming 2026</div>
+    <h1 class="hero-title">
+      <span class="out">Out of Town</span>
+      <span class="shooter">Shooter</span>
+    </h1>
+    <p class="hero-subtitle">
+      Some jobs follow you home. This one never leaves the city limits.
+    </p>
+    <div class="hero-cta">
+      <a href="#synopsis" class="btn btn-primary">Read the story</a>
+      <a href="#cta" class="btn btn-ghost">Get notified</a>
+    </div>
+  </div>
+  <div class="scroll-indicator">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ── SYNOPSIS ── -->
+<section class="synopsis" id="synopsis">
+  <div class="container">
+    <div class="synopsis-content reveal">
+      <div class="section-tag">The Book</div>
+      <h2 class="section-title">Every city has a shadow. This one has a name.</h2>
+      <div class="synopsis-text">
+        <p>When a out-of-town hitter takes a contract in a city that doesn't forgive outsiders, one job spirals into a war between rival factions, crooked cops, and a past he thought he buried six feet deep.</p>
+        <p>Out of Town Shooter pulls you through the grimy back alleys and neon-lit corners of a city where loyalty is currency and betrayal comes with a body count. No witness protection. No way out. Just survival.</p>
+        <p>Raw. Unflinching. Unforgettable.</p>
+      </div>
+    </div>
+    <div class="synopsis-visual reveal">
+      <img src="BookCover.jpeg" alt="Out of Town Shooter book cover" class="book-cover reveal">
+    </div>
+  </div>
+</section>
+
+<!-- ── QUOTE ── -->
+<div class="quote-strip reveal">
+  <blockquote>
+    "A bullet doesn't care where you're from. It only cares where you're standing."
+  </blockquote>
+  <cite>— Out of Town Shooter</cite>
+</div>
+
+<!-- ── AUTHOR ── -->
+<section class="author" id="author">
+  <div class="container">
+    <img src="Author.jpeg" alt="Author photo" class="author-photo reveal">
+    <div class="author-content reveal">
+      <div class="section-tag">The Author</div>
+      <h2 class="section-title">Voice of the streets.</h2>
+      <div class="author-bio">
+        <p>[Author name] brings the raw energy of the city to every page. With a voice forged in the neighborhoods most writers only drive past, [Author name] delivers fiction that hits like a shot of adrenaline — real, uncompromising, and impossible to put down.</p>
+        <p>Out of Town Shooter is [his/her] debut novel.</p>
+      </div>
+      <div class="author-socials">
+        <a href="#">Instagram</a>
+        <a href="#">Twitter / X</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="cta" id="cta">
+  <div class="container reveal">
+    <div class="section-tag">Stay Connected</div>
+    <h2 class="section-title">Be the first to know when it drops.</h2>
+    <p style="color: var(--muted); max-width: 500px; margin: 16px auto 0;">
+      Sign up for release updates, exclusive previews, and behind-the-scenes content.
+    </p>
+    <form class="cta-newsletter" onsubmit="event.preventDefault(); alert('Signed up! (Demo)');">
+      <input type="email" placeholder="you@email.com" required>
+      <button type="submit">Notify Me</button>
+    </form>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <p>&copy; 2026 Out of Town Shooter. All rights reserved. Built with grit.</p>
+</footer>
+
+<script>
+  // ── Particle System ──
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let mouse = { x: -1000, y: -1000 };
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  class Particle {
+    constructor() {
+      this.reset();
+      this.y = Math.random() * canvas.height;
+    }
+    reset() {
+      this.x = Math.random() * canvas.width;
+      this.y = -10;
+      this.size = Math.random() * 1.5 + 0.5;
+      this.speed = Math.random() * 0.5 + 0.1;
+      this.opacity = Math.random() * 0.3 + 0.05;
+      this.wind = (Math.random() - 0.5) * 0.3;
+    }
+    update() {
+      this.y += this.speed;
+      this.x += this.wind;
+      // Slight attraction to mouse
+      const dx = mouse.x - this.x;
+      const dy = mouse.y - this.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 150) {
+        this.x += dx * 0.002;
+        this.y += dy * 0.002;
+      }
+      if (this.y > canvas.height + 10) { this.reset(); this.y = -10; }
+      if (this.x < -10) this.x = canvas.width + 10;
+      if (this.x > canvas.width + 10) this.x = -10;
+    }
+    draw() {
+      ctx.fillStyle = `rgba(196, 154, 108, ${this.opacity})`;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  for (let i = 0; i < 120; i++) {
+    particles.push(new Particle());
+  }
+
+  document.addEventListener('mousemove', (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  // ── Scroll Reveal ──
+  const revealElements = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+  revealElements.forEach(el => observer.observe(el));
+
+  // ── Parallax on hero title ──
+  const heroTitle = document.querySelector('.hero-title');
+  window.addEventListener('scroll', () => {
+    const scrolled = window.pageYOffset;
+    if (heroTitle) {
+      heroTitle.style.transform = `translateY(${scrolled * 0.15}px)`;
+      heroTitle.style.opacity = Math.max(0, 1 - scrolled / 600);
+    }
+  });
+
+  // ── Smooth scroll for anchor links ──
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
