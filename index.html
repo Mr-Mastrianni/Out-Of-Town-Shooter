@@ -809,6 +809,10 @@
   <p>&copy; 2026 Out of Town Shooter. All rights reserved. Built with grit.</p>
 </footer>
 
+<!-- ── BACKGROUND AUDIO ── -->
+<audio id="bgAudio" src="da%20shoota.mp3" loop preload="auto"></audio>
+<button class="audio-toggle" id="audioToggle" aria-label="Toggle music" title="Toggle music">&#x1F50A;</button>
+
 <script>
   // ── Particle System ──
   const canvas = document.getElementById('particles');
@@ -1031,7 +1035,7 @@
       audioStarted = true;
       toggleBtn.classList.add('playing');
       toggleBtn.innerHTML = '&#x1F50A;';
-    }).catch(() => {});
+    }).catch((err) => { console.log('Audio autoplay blocked:', err.message); });
   }
 
   // First user interaction starts audio (bypasses autoplay block)
@@ -1057,9 +1061,5 @@
     }
   });
 </script>
-
-<!-- ── BACKGROUND AUDIO ── -->
-<audio id="bgAudio" src="da%20shoota.mp3" loop preload="auto"></audio>
-<button class="audio-toggle" id="audioToggle" aria-label="Toggle music" title="Toggle music">&#x1F50A;</button>
 </body>
 </html>
