@@ -561,13 +561,35 @@
   @media (max-width: 768px) {
     section { padding: 60px 20px; }
     .hero {
-      min-height: 100vh;
-      min-height: 100dvh;
       height: auto;
+      overflow: visible;
     }
     .hero-video {
-      object-fit: contain;
-      background: var(--bg); /* fills letterboxing with site bg */
+      position: relative;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      display: block;
+      object-fit: cover;
+    }
+    /* Gradient fade mask — dissolves video bottom into darkness */
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 140px;
+      z-index: 1;
+      pointer-events: none;
+      background: linear-gradient(to bottom, transparent 0%, var(--bg) 85%);
+    }
+    .hero-text {
+      margin-top: -50px;
+      padding-top: 80px;
+      position: relative;
+      z-index: 2;
+      background: var(--bg);
     }
     .synopsis .container,
     .author .container {
