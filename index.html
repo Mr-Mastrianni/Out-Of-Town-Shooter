@@ -340,7 +340,7 @@
 
 <!-- ── HERO ── -->
 <section class="hero" id="home">
-  <video class="hero-video" src="VidAnimationLogo.mp4" autoplay muted loop playsinline preload="auto"></video>
+  <video class="hero-video" id="heroVideo" src="VidAnimationLogo2.mp4" autoplay muted playsinline preload="auto"></video>
 </section>
 
 <!-- ── HERO TEXT ── -->
@@ -492,6 +492,17 @@
     requestAnimationFrame(animate);
   }
   animate();
+
+  // ── Auto-scroll after video ends ──
+  const heroVideo = document.getElementById('heroVideo');
+  if (heroVideo) {
+    heroVideo.addEventListener('ended', () => {
+      const heroText = document.querySelector('.hero-text');
+      if (heroText) {
+        heroText.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  }
 
   // ── Scroll Reveal ──
   const revealElements = document.querySelectorAll('.reveal');
