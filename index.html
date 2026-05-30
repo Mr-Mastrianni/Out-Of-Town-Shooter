@@ -561,8 +561,13 @@
   @media (max-width: 768px) {
     section { padding: 60px 20px; }
     .hero {
-      height: 100vh;
-      height: 100dvh; /* dynamic viewport — avoids mobile browser chrome issues */
+      min-height: 100vh;
+      min-height: 100dvh;
+      height: auto;
+    }
+    .hero-video {
+      object-fit: contain;
+      background: var(--bg); /* fills letterboxing with site bg */
     }
     .synopsis .container,
     .author .container {
