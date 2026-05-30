@@ -673,6 +673,33 @@
     .section-fade::before,
     .section-fade::after { display: none; }
   }
+
+  /* ── AUDIO TOGGLE ── */
+  .audio-toggle {
+    position: fixed; bottom: 28px; right: 28px; z-index: 10000;
+    width: 44px; height: 44px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: rgba(17,17,24,0.85);
+    backdrop-filter: blur(8px);
+    color: var(--muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s ease;
+    opacity: 0.5;
+  }
+  .audio-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    opacity: 1;
+  }
+  .audio-toggle.playing {
+    color: var(--accent);
+    border-color: var(--accent);
+    opacity: 0.8;
+    box-shadow: 0 0 16px rgba(212,176,101,0.25);
+  }
 </style>
 </head>
 <body>
@@ -993,7 +1020,46 @@
       }
     });
   });
+  // ── Background Audio Toggle ──
+  const audio = document.getElementById('bgAudio');
+  const toggleBtn = document.getElementById('audioToggle');
+  let audioStarted = false;
+
+  function startAudio() {
+    if (audioStarted) return;
+    audio.play().then(() => {
+      audioStarted = true;
+      toggleBtn.classList.add('playing');
+      toggleBtn.innerHTML = '&#x1F50A;';
+    }).catch(() => {});
+  }
+
+  // First user interaction starts audio (bypasses autoplay block)
+  document.addEventListener('click', function startOnInteraction() {
+    startAudio();
+  }, { once: false });
+
+  // Toggle button
+  toggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!audioStarted) {
+      startAudio();
+      return;
+    }
+    if (audio.paused) {
+      audio.play();
+      toggleBtn.classList.add('playing');
+      toggleBtn.innerHTML = '&#x1F50A;';
+    } else {
+      audio.pause();
+      toggleBtn.classList.remove('playing');
+      toggleBtn.innerHTML = '&#x1F507;';
+    }
+  });
 </script>
 
+<!-- ── BACKGROUND AUDIO ── -->
+<audio id="bgAudio" src="da%20shoota.mp3" loop preload="auto"></audio>
+<button class="audio-toggle" id="audioToggle" aria-label="Toggle music" title="Toggle music">&#x1F50A;</button>
 </body>
 </html>
