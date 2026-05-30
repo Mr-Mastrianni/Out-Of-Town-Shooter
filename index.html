@@ -434,7 +434,7 @@
     display: block;
     width: 100%; height: auto; aspect-ratio: 3/4;
     object-fit: cover;
-    object-position: top center;
+    object-position: 50% 15%;
     transition: filter 0.5s ease, transform 0.1s linear;
     will-change: transform;
   }
@@ -615,9 +615,9 @@
     .section-fade::before { height: 60px; }
     .synopsis.section-fade::after { height: 50px; }
 
-    /* Author photo — constrain width, let height be natural */
+    /* Author photo — constrain width */
     .author-photo-wrap { max-width: 320px; margin: 0 auto; }
-    .author-photo-wrap img { aspect-ratio: auto; object-fit: contain; object-position: center; }
+    .author-photo-wrap img { aspect-ratio: 3/4; object-fit: cover; object-position: 50% 15%; }
 
     /* Quote */
     .quote-strip { padding: 50px 20px; }
