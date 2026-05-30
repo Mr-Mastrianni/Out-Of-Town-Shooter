@@ -58,28 +58,21 @@
   /* ── HERO ── */
   .hero {
     min-height: 100vh;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
+    display: flex; align-items: flex-end; justify-content: center;
     text-align: center;
+    padding-bottom: 80px;
     position: relative; overflow: hidden;
-    gap: 0;
-  }
-  .hero-video-wrap {
-    position: relative;
-    width: 100%; max-width: 900px;
-    aspect-ratio: 16/9;
-    margin: 0 auto;
-    z-index: 2;
   }
   .hero-video {
+    position: absolute; inset: 0; z-index: 0;
     width: 100%; height: 100%;
-    object-fit: contain;
-    border-radius: var(--radius);
-    filter: drop-shadow(0 0 60px rgba(212,176,101,0.25));
+    object-fit: cover;
+    opacity: 0.55;
+    filter: brightness(0.55) saturate(0.9);
   }
   .hero-overlay {
     position: absolute; inset: 0; z-index: 1;
-    background: radial-gradient(ellipse at center, transparent 40%, var(--bg) 90%);
+    background: linear-gradient(to top, var(--bg) 20%, transparent 60%);
     pointer-events: none;
   }
   .hero-content { position: relative; z-index: 2; padding: 0 24px; }
@@ -349,9 +342,8 @@
 
 <!-- ── HERO ── -->
 <section class="hero" id="home">
-  <div class="hero-video-wrap">
-    <video class="hero-video" src="Vid.mp4" autoplay muted loop playsinline preload="auto"></video>
-  </div>
+  <video class="hero-video" src="VidAnimationLogo.mp4" autoplay muted loop playsinline preload="auto"></video>
+  <div class="hero-overlay"></div>
   <div class="hero-content">
     <div class="hero-badge glitch-hover">Coming 2026</div>
     <h1 class="hero-title">
