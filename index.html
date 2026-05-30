@@ -560,16 +560,70 @@
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
     section { padding: 60px 20px; }
+    .hero {
+      height: 100vh;
+      height: 100dvh; /* dynamic viewport — avoids mobile browser chrome issues */
+    }
     .synopsis .container,
     .author .container {
       grid-template-columns: 1fr; gap: 40px;
     }
     .author .container { display: flex; flex-direction: column-reverse; }
     .book-cover { width: 200px; }
-    .hero-title { font-size: clamp(3rem, 10vw, 5rem); }
-    .cta-newsletter { flex-direction: column; }
+    .hero-title { font-size: clamp(2.5rem, 12vw, 4rem); }
+    .hero-title .shooter { font-size: clamp(3rem, 16vw, 5.5rem); }
+    .hero-subtitle { font-size: 0.9rem; padding: 0 8px; }
     .hero-cta { flex-direction: column; align-items: center; }
+    .btn { padding: 14px 28px; font-size: 1.1rem; }
+    .cta-newsletter { flex-direction: column; }
+
+    /* Tighter bullet divider */
+    .bullet-divider { gap: 14px; padding: 40px 16px; }
+    .bullet-hole { width: 16px; height: 16px; }
+    .bullet-hole.lg { width: 22px; height: 22px; }
+    .bullet-hole.sm { width: 10px; height: 10px; }
+
+    /* Shallower crossfade on small screens */
+    .section-fade::before { height: 60px; }
+    .synopsis.section-fade::after { height: 50px; }
+
+    /* Author photo — constrain width */
+    .author-photo-wrap { max-width: 320px; margin: 0 auto; }
+    .author-photo-wrap img { aspect-ratio: 3/4; }
+
+    /* Quote */
+    .quote-strip { padding: 50px 20px; }
+    .quote-strip blockquote { font-size: clamp(1.5rem, 6vw, 2rem); }
+
+    /* CTA */
+    .cta { min-height: 50vh; padding: 60px 20px; }
+
+    /* Footer */
+    footer { padding: 30px 20px; font-size: 0.65rem; }
+
+    /* Reduce particle count JS will read this */
   }
+
+  /* ── TOUCH / MOBILE QUALITY-OF-LIFE ── */
+  @media (hover: none) and (pointer: coarse) {
+    /* Disable hover-only effects on touch */
+    .book-cover { cursor: default; }
+    .book-cover:hover { box-shadow: 20px 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08); }
+    .book-cover::after { display: none !important; }
+    .author-photo-wrap:hover img { filter: none; }
+    .author-photo-wrap::after { display: none !important; }
+
+    /* No parallax jank on touch — JS will read this */
+  }
+
+  /* Tap highlight cleanup */
+  a, button, .btn, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* Image responsiveness */
+  img { max-width: 100%; height: auto; }
 
   @media (prefers-reduced-motion: reduce) {
     .reveal { opacity: 1; transform: none; transition: none; }
@@ -751,7 +805,10 @@
     }
   }
 
-  for (let i = 0; i < 120; i++) {
+  const isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  const PARTICLE_COUNT = isMobile ? 40 : 120;
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
     particles.push(new Particle());
   }
 
@@ -778,9 +835,9 @@
     });
   }
 
-  // ── Book cover 3D tilt on mouse move ──
+  // ── Book cover 3D tilt on mouse move (desktop only) ──
   const bookCover = document.querySelector('.book-cover');
-  if (bookCover) {
+  if (bookCover && !isMobile) {
     bookCover.addEventListener('mousemove', (e) => {
       const rect = bookCover.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width - 0.5;   // -0.5 … 0.5
@@ -830,32 +887,31 @@
     }
   });
 
-  // ── Parallax depth split: author photo at 0.8x ──
+  // ── Parallax depth split: author photo at 0.8x (desktop only) ──
   const authorSection = document.querySelector('.author');
   const authorPhoto = document.querySelector('.author-photo');
   let authorTicking = false;
 
-  function updateAuthorParallax() {
-    if (!authorSection || !authorPhoto) { authorTicking = false; return; }
-    const rect = authorSection.getBoundingClientRect();
-    const viewH = window.innerHeight;
-    // How far the section top has scrolled past the viewport bottom (0 = just entered, positive = further in)
-    const sectionProgress = viewH - rect.top;
-    // Only apply when section is in view
-    if (sectionProgress > 0 && rect.bottom > 0) {
-      // Photo moves at 0.8x → lags by 20% → counter-transform
-      const lag = sectionProgress * 0.2;
-      authorPhoto.style.transform = `translateY(${lag}px)`;
+  if (!isMobile) {
+    function updateAuthorParallax() {
+      if (!authorSection || !authorPhoto) { authorTicking = false; return; }
+      const rect = authorSection.getBoundingClientRect();
+      const viewH = window.innerHeight;
+      const sectionProgress = viewH - rect.top;
+      if (sectionProgress > 0 && rect.bottom > 0) {
+        const lag = sectionProgress * 0.2;
+        authorPhoto.style.transform = `translateY(${lag}px)`;
+      }
+      authorTicking = false;
     }
-    authorTicking = false;
-  }
 
-  window.addEventListener('scroll', () => {
-    if (!authorTicking) {
-      requestAnimationFrame(updateAuthorParallax);
-      authorTicking = true;
-    }
-  });
+    window.addEventListener('scroll', () => {
+      if (!authorTicking) {
+        requestAnimationFrame(updateAuthorParallax);
+        authorTicking = true;
+      }
+    });
+  }
 
   // ── Click-to-shoot: bullet hole on click ──
   const IMPACT_LIFETIME = 5000; // ms before hole fades
@@ -890,13 +946,15 @@
     setTimeout(() => document.body.classList.remove('screen-shake'), 250);
   }
 
-  document.addEventListener('click', (e) => {
-    // Don't spawn on interactive elements
-    const tag = e.target.tagName.toLowerCase();
-    if (tag === 'a' || tag === 'button' || tag === 'input' || tag === 'textarea' ||
-        e.target.closest('a, button, input, textarea, .book-cover')) return;
-    spawnBulletHole(e.clientX, e.clientY);
-  });
+  // ── Click-to-shoot (desktop only — touch devices skip this) ──
+  if (!isMobile) {
+    document.addEventListener('click', (e) => {
+      const tag = e.target.tagName.toLowerCase();
+      if (tag === 'a' || tag === 'button' || tag === 'input' || tag === 'textarea' ||
+          e.target.closest('a, button, input, textarea, .book-cover')) return;
+      spawnBulletHole(e.clientX, e.clientY);
+    });
+  }
 
   // ── Smooth scroll for anchor links ──
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
