@@ -615,9 +615,9 @@
     .section-fade::before { height: 60px; }
     .synopsis.section-fade::after { height: 50px; }
 
-    /* Author photo — constrain width */
-    .author-photo-wrap { max-width: 320px; margin: 0 auto; }
-    .author-photo-wrap img { aspect-ratio: 3/4; object-fit: cover; object-position: 50% 15%; }
+    /* Author photo — landscape on mobile, no forced portrait crop */
+    .author-photo-wrap { max-width: 320px; margin: 0 auto; overflow: visible; }
+    .author-photo-wrap img { aspect-ratio: auto; object-fit: contain; width: 100%; height: auto; }
 
     /* Quote */
     .quote-strip { padding: 50px 20px; }
